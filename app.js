@@ -531,11 +531,14 @@ if (!fs.existsSync(path.join(__dirname, 'data'))) {
 }
 
 // Update port configuration for Render
-const port = process.env.PORT || 10000;
-app.listen(port, '0.0.0.0', () => {
-    console.log(`🚀 Server is running at http://0.0.0.0:${port}`);
+const port = parseInt(process.env.PORT || "3000");
+app.listen(port, () => {
+    console.log('🚀 Server is running!');
+    console.log(`Port: ${port}`);
     console.log(`Environment: ${process.env.NODE_ENV}`);
     console.log(`Firebase Project: ${process.env.FIREBASE_PROJECT_ID}`);
+}).on('error', (err) => {
+    console.error('Failed to start server:', err);
 });
 
 // Export the app
