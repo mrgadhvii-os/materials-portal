@@ -31,7 +31,7 @@ admin.initializeApp({
 const db = admin.database();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 10000;
 
 // Middleware
 app.use(cors());
@@ -530,10 +530,12 @@ if (!fs.existsSync(path.join(__dirname, 'data'))) {
   fs.mkdirSync(path.join(__dirname, 'data'));
 }
 
-// Move the app.listen to the end of the file
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server is running on port ${PORT}`);
+// Update port configuration for Render
+const port = process.env.PORT || 10000;
+app.listen(port, '0.0.0.0', () => {
+    console.log(`🚀 Server is running at http://0.0.0.0:${port}`);
     console.log(`Environment: ${process.env.NODE_ENV}`);
+    console.log(`Firebase Project: ${process.env.FIREBASE_PROJECT_ID}`);
 });
 
 // Export the app
