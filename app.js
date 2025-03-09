@@ -13,7 +13,7 @@ const serviceAccount = {
   type: "service_account",
   project_id: process.env.FIREBASE_PROJECT_ID,
   private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
-  private_key: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+  private_key: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
   client_email: process.env.FIREBASE_CLIENT_EMAIL,
   client_id: process.env.FIREBASE_CLIENT_ID,
   auth_uri: "https://accounts.google.com/o/oauth2/auth",
@@ -22,13 +22,18 @@ const serviceAccount = {
   client_x509_cert_url: process.env.FIREBASE_CLIENT_CERT_URL
 };
 
-admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-    databaseURL: process.env.FIREBASE_DATABASE_URL
-});
-
-// Get database reference AFTER initialization
-const db = admin.database();
+// Initialize Firebase only if credentials are available
+if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_PRIVATE_KEY) {
+    admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
+        databaseURL: process.env.FIREBASE_DATABASE_URL
+    });
+    
+    // Get database reference AFTER initialization
+    const db = admin.database();
+} else {
+    console.warn('Firebase credentials not found. Running in development mode.');
+}
 
 const app = express();
 const PORT = process.env.PORT || 10000;
@@ -525,21 +530,24 @@ app.get('/admin/stats', requireAdmin, async (req, res) => {
     }
 });
 
-// Create data directory if it doesn't exist
-if (!fs.existsSync(path.join(__dirname, 'data'))) {
-  fs.mkdirSync(path.join(__dirname, 'data'));
+// Create data directory if it doesn't exist and not in Vercel
+if (!process.env.VERCEL && !fs.existsSync(path.join(__dirname, 'data'))) {
+    fs.mkdirSync(path.join(__dirname, 'data'));
 }
 
-// Update port configuration for Render
-const port = parseInt(process.env.PORT || "3000");
-app.listen(port, () => {
-    console.log('🚀 Server is running!');
-    console.log(`Port: ${port}`);
-    console.log(`Environment: ${process.env.NODE_ENV}`);
-    console.log(`Firebase Project: ${process.env.FIREBASE_PROJECT_ID}`);
-}).on('error', (err) => {
-    console.error('Failed to start server:', err);
-});
+// Start server if not running in Vercel
+if (!process.env.VERCEL) {
+    const port = parseInt(process.env.PORT || "3000");
+    app.listen(port, () => {
+        console.log('🚀 Server is running!');
+        console.log(`Port: ${port}`);
+        console.log(`Environment: ${process.env.NODE_ENV}`);
+        console.log(`Platform: ${process.env.VERCEL ? 'Vercel' : 'Other'}`);
+        console.log(`Firebase Project: ${process.env.FIREBASE_PROJECT_ID || 'Not configured'}`);
+    }).on('error', (err) => {
+        console.error('Failed to start server:', err);
+    });
+}
 
 // Export the app
 module.exports = app; 
