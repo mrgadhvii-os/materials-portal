@@ -9,7 +9,7 @@
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
-    "vercel-build": "echo 'Building...'"
+    "build": "echo 'No build step required'"
   },
   "keywords": [],
   "author": "",
