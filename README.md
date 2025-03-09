@@ -1,49 +1,84 @@
 # Educational Materials Portal
 
-A modern Node.js application to categorize, display, and manage educational materials with a beautiful UI and seamless user experience.
+A web application for managing and accessing educational materials with authentication and admin controls.
 
 ## Features
 
-- **Automatic Material Categorization**: Parses filenames to extract standard, subject, material type, year, and language
-- **Material Cards**: Visually appealing cards displaying material information
-- **Filter System**: Filter materials by standard, subject, year, and language
-- **Preview Page**: Display material details with a preview thumbnail
-- **Download Timer**: 10-second countdown before enabling download
-- **Responsive Design**: Works on desktop and mobile devices
+- Material and Paper Management
+- Access Key Generation
+- Admin Panel
+- Firebase Integration
+- Preview System
+- Authentication System
 
-## Technologies Used
+## Deployment on Vercel
 
-- **Backend**: Node.js, Express.js
-- **Frontend**: EJS templates, Bootstrap 5, jQuery
-- **Data**: CSV parsing and processing
-- **Styling**: Custom CSS with animations
-
-## Installation
-
-1. Clone the repository
-2. Install dependencies:
-   ```
-   npm install
-   ```
-3. Ensure your materials.csv file is in the data directory
-
-## Usage
-
-1. Start the application:
-   ```
-   npm start
-   ```
-2. Open your browser and navigate to `http://localhost:3000`
-
-## CSV Format
-
-The application expects a CSV file in the following format:
-```
-filename,url
-12th-physics-textbook-2023,https://link-to-file.com
+1. Install Vercel CLI:
+```bash
+npm i -g vercel
 ```
 
-Where the filename follows the pattern: `standard-subject-materialtype-year[-language]`
+2. Login to Vercel:
+```bash
+vercel login
+```
+
+3. Configure Firebase:
+   - Create a Firebase project
+   - Download service account key
+   - Add as Secret in Vercel:
+```bash
+vercel secrets add firebase-service-account "$(cat gec-wave-firebase-adminsdk*.json)"
+```
+
+4. Deploy:
+```bash
+vercel
+```
+
+## Environment Variables
+
+Set these in Vercel dashboard:
+
+- `FIREBASE_PROJECT_ID`
+- `FIREBASE_CLIENT_EMAIL`
+- `FIREBASE_PRIVATE_KEY`
+- `FIREBASE_DATABASE_URL`
+
+## Development
+
+1. Install dependencies:
+```bash
+npm install
+```
+
+2. Run development server:
+```bash
+npm run dev
+```
+
+3. Build for production:
+```bash
+npm run build
+```
+
+## File Structure
+
+```
+materials-portal/
+├── app.js              # Main application file
+├── public/             # Static files
+├── views/              # EJS templates
+├── data/              # CSV files
+└── vercel.json        # Vercel configuration
+```
+
+## Security
+
+- Rate limiting on admin login
+- Secure cookie settings
+- Firebase security rules
+- Access key validation
 
 ## License
 
