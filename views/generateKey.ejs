@@ -1,0 +1,266 @@
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h3><i class="fas fa-key me-2"></i> Generate Access Key</h3>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-8 mx-auto">
+                <div class="alert alert-info">
+                    <p><i class="fas fa-info-circle me-2"></i> Generate a 36-hour access key for the educational materials portal.</p>
+                    <p>Click the button below to generate your access key. You'll need this key to access all educational materials.</p>
+                </div>
+                
+                <div id="initial-container" class="text-center">
+                    <button id="generate-btn" class="btn btn-primary btn-lg">
+                        <i class="fas fa-magic me-2"></i> Generate Access Key
+                    </button>
+                </div>
+                
+                <div id="loading-container" class="text-center py-4 d-none">
+                    <div class="loading-animation">
+                        <div class="spinner-grow text-primary" role="status" style="width: 3rem; height: 3rem;">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <div class="spinner-grow text-secondary" role="status" style="width: 3rem; height: 3rem;">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <div class="spinner-grow text-success" role="status" style="width: 3rem; height: 3rem;">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <h4 class="mb-3">Generating Your Access Key</h4>
+                        <div class="progress" style="height: 10px;">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 100%"></div>
+                        </div>
+                        <p class="text-muted mt-3">Please wait while we generate your secure access key...</p>
+                    </div>
+                </div>
+                
+                <div id="result-container" class="mt-4 d-none">
+                    <div class="alert alert-success">
+                        <p><i class="fas fa-check-circle me-2"></i> <strong>Your link has been created!</strong></p>
+                        <p>Click on the button below to open your key page. <strong>You must click this link yourself to activate your key.</strong></p>
+                    </div>
+                    
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h5 class="card-title">Your Link</h5>
+                            <div class="input-group mb-3">
+                                <input type="text" id="shortened-url" class="form-control" readonly>
+                                <button class="btn btn-success" type="button" id="copy-url-btn">
+                                    <i class="fas fa-copy me-1"></i> Copy
+                                </button>
+                            </div>
+                            <div class="text-center mt-3">
+                                <a id="open-url-btn" href="#" class="btn btn-primary btn-lg" target="_blank">
+                                    <i class="fas fa-external-link-alt me-1"></i> Open Key Page
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Firebase
+    const firebaseConfig = {
+        apiKey: "AIzaSyAVrK3QW1jlREARB7M9e2igW2F6EtVP3Iw",
+        authDomain: "gec-wave.firebaseapp.com",
+        databaseURL: "https://gec-wave-default-rtdb.firebaseio.com",
+        projectId: "gec-wave",
+        storageBucket: "gec-wave.firebasestorage.app",
+        messagingSenderId: "1095163626038",
+        appId: "1:1095163626038:web:5bf07b161005a665e30e97",
+        measurementId: "G-12VHF7SJ6M"
+    };
+    
+    // Check if Firebase is already initialized
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+    
+    const db = firebase.database();
+    
+    // Generate a unique key
+    function generateUniqueKey() {
+        const keyChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let key = '';
+        for (let i = 0; i < 16; i++) {
+            key += keyChars.charAt(Math.floor(Math.random() * keyChars.length));
+        }
+        return key;
+    }
+    
+    // Elements
+    const initialContainer = document.getElementById('initial-container');
+    const loadingContainer = document.getElementById('loading-container');
+    const resultContainer = document.getElementById('result-container');
+    const shortenedUrlInput = document.getElementById('shortened-url');
+    const openUrlBtn = document.getElementById('open-url-btn');
+    const generateBtn = document.getElementById('generate-btn');
+    
+    // Copy URL button
+    document.getElementById('copy-url-btn').addEventListener('click', function() {
+        const urlInput = document.getElementById('shortened-url');
+        urlInput.select();
+        document.execCommand('copy');
+        
+        // Show copy confirmation
+        const originalText = this.innerHTML;
+        this.innerHTML = '<i class="fas fa-check me-1"></i> Copied!';
+        this.classList.remove('btn-success');
+        this.classList.add('btn-info');
+        
+        setTimeout(() => {
+            this.innerHTML = originalText;
+            this.classList.remove('btn-info');
+            this.classList.add('btn-success');
+        }, 2000);
+    });
+    
+    // Handle generate button click
+    generateBtn.addEventListener('click', async function() {
+        try {
+            // Hide initial container and show loading
+            initialContainer.classList.add('d-none');
+            loadingContainer.classList.remove('d-none');
+            
+            // 1. Generate access key
+            const accessKey = generateUniqueKey();
+            const expiryTime = new Date();
+            expiryTime.setHours(expiryTime.getHours() + 36);
+            
+            // 2. Create destination URL - use a public domain for ModiJi API
+            // For testing, we'll use a placeholder domain. Replace with your actual domain in production
+            const localDestinationUrl = `${window.location.origin}/generatedKey/${accessKey}`;
+            const publicDestinationUrl = `https://materials-portal.netlify.app/generatedKey/${accessKey}`;
+            
+            // 3. Generate ModiJi URL
+            const apiToken = '8089838e6df9651423a7f87cd8bfe2c56378ee4c';
+            const randomChars = Math.random().toString(36).substring(2, 6);
+            const customAlias = 'MrGadhvii' + randomChars;
+            
+            // Construct API URL with proper encoding
+            const encodedUrl = encodeURIComponent(publicDestinationUrl);
+            const apiUrl = `https://api.modijiurl.com/api?api=${apiToken}&url=${encodedUrl}&alias=${customAlias}`;
+            
+            console.log('ModiJi API Request:', {
+                originalUrl: publicDestinationUrl,
+                encodedUrl: encodedUrl,
+                customAlias: customAlias,
+                apiUrl: apiUrl
+            });
+            
+            // Make the API request
+            const response = await fetch(apiUrl);
+            const responseText = await response.text();
+            
+            console.log('ModiJi API Raw Response:', responseText);
+            
+            let jsonResponse;
+            try {
+                jsonResponse = JSON.parse(responseText);
+                console.log('ModiJi API Parsed Response:', jsonResponse);
+            } catch (e) {
+                console.error('Failed to parse ModiJi response:', e);
+                throw new Error('Invalid JSON response from ModiJi API');
+            }
+            
+            // Check for API errors
+            if (jsonResponse.status === 'error') {
+                throw new Error(`ModiJi API Error: ${JSON.stringify(jsonResponse.message)}`);
+            }
+            
+            // Construct the ModiJi URL
+            const modijiUrl = `https://modijiurl.com/${customAlias}`;
+            
+            // 4. Save to Firebase
+            const keyData = {
+                key: accessKey,
+                shortCode: customAlias,
+                email: "auto-generated@example.com",
+                shortenedUrl: modijiUrl,
+                destinationUrl: localDestinationUrl, // Save the local URL for actual redirection
+                publicUrl: publicDestinationUrl, // Save the public URL used for ModiJi
+                createdAt: new Date().toISOString(),
+                expiresAt: expiryTime.toISOString(),
+                isActivated: false,
+                usages: {}
+            };
+            
+            // Save to Firebase and wait for confirmation
+            const saveResult = await db.ref('accessKeys').push(keyData);
+            console.log('Saved to Firebase with ID:', saveResult.key);
+            
+            // 5. Show success UI
+            loadingContainer.classList.add('d-none');
+            shortenedUrlInput.value = modijiUrl;
+            openUrlBtn.href = modijiUrl;
+            resultContainer.classList.remove('d-none');
+            
+        } catch (error) {
+            console.error('Error in key generation process:', error);
+            
+            // Show error message to user
+            loadingContainer.classList.add('d-none');
+            
+            // Create error alert with more detailed message
+            const errorAlert = document.createElement('div');
+            errorAlert.className = 'alert alert-danger mt-3';
+            errorAlert.innerHTML = `
+                <p><i class="fas fa-exclamation-circle me-2"></i> <strong>Error:</strong> ${error.message}</p>
+                <p class="mb-0">Please try again in a few moments. If the problem persists, contact support.</p>
+                <small class="text-muted">Error details have been logged for troubleshooting.</small>
+            `;
+            
+            // Add retry button
+            const retryButton = document.createElement('button');
+            retryButton.className = 'btn btn-primary mt-3';
+            retryButton.innerHTML = '<i class="fas fa-redo me-2"></i> Try Again';
+            retryButton.onclick = function() {
+                location.reload();
+            };
+            
+            // Show error UI
+            const container = document.querySelector('.col-md-8.mx-auto');
+            container.appendChild(errorAlert);
+            container.appendChild(retryButton);
+        }
+    });
+
+    // Function to generate a short code for our URL
+    function generateShortCode(length) {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let code = '';
+        for (let i = 0; i < length; i++) {
+            code += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return code;
+    }
+});
+</script>
+
+<style>
+.loading-animation {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.loading-animation .spinner-grow {
+    animation-duration: 1.5s;
+}
+
+.loading-animation .spinner-grow:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.loading-animation .spinner-grow:nth-child(3) {
+    animation-delay: 0.4s;
+}
+</style> 

@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2196F3;
+            --secondary-color: #3F51B5;
+            --success-color: #4CAF50;
+            --danger-color: #f44336;
+            --warning-color: #ff9800;
+            --info-color: #00BCD4;
+        }
+        
+        body {
+            background: #f5f5f5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .admin-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+        }
+        
+        .card-header {
+            border-bottom: none;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 15px 15px 0 0 !important;
+        }
+        
+        .stat-card {
+            padding: 1.5rem;
+            border-radius: 15px;
+            color: white;
+            margin-bottom: 1rem;
+        }
+        
+        .stat-card.primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        }
+        
+        .stat-card.success {
+            background: linear-gradient(135deg, var(--success-color), #45a049);
+        }
+        
+        .stat-card.warning {
+            background: linear-gradient(135deg, var(--warning-color), #f57c00);
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 1rem 0;
+        }
+        
+        .form-switch .form-check-input {
+            width: 3em;
+            height: 1.5em;
+            margin-left: -3.5em;
+        }
+        
+        .form-switch .form-check-input:checked {
+            background-color: var(--success-color);
+            border-color: var(--success-color);
+        }
+        
+        .activity-item {
+            padding: 1rem;
+            border-left: 4px solid transparent;
+            margin-bottom: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .activity-item:hover {
+            background: #f8f9fa;
+            border-left-color: var(--primary-color);
+        }
+        
+        .activity-time {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .activity-action {
+            font-weight: 500;
+            color: var(--primary-color);
+        }
+        
+        .btn-logout {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid white;
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-logout:hover {
+            background: white;
+            color: var(--primary-color);
+        }
+        
+        .loading-spinner {
+            width: 3rem;
+            height: 3rem;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <!-- Admin Header -->
+    <div class="admin-header">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1><i class="fas fa-shield-alt me-2"></i>Admin Panel</h1>
+                    <p class="mb-0">Manage your educational materials portal</p>
+                </div>
+                <% if (isAdmin) { %>
+                    <button id="logout-btn" class="btn btn-logout">
+                        <i class="fas fa-sign-out-alt me-2"></i>Logout
+                    </button>
+                <% } %>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <% if (!isAdmin) { %>
+            <!-- Login Section -->
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body p-4">
+                            <h4 class="text-center mb-4"><i class="fas fa-lock me-2"></i>Admin Login</h4>
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>Please enter the admin password to continue.
+                            </div>
+                            <form id="login-form">
+                                <div class="mb-3">
+                                    <label for="password" class="form-label">Admin Password</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-key"></i></span>
+                                        <input type="password" class="form-control" id="password" required>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Login
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <% } else { %>
+            <!-- Admin Dashboard -->
+            <div id="admin-dashboard">
+                <!-- Statistics Row -->
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="stat-card primary">
+                            <h5><i class="fas fa-key me-2"></i>Total Keys</h5>
+                            <div class="stat-number" id="total-keys">-</div>
+                            <p class="mb-0">Generated access keys</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-card success">
+                            <h5><i class="fas fa-check-circle me-2"></i>Active Keys</h5>
+                            <div class="stat-number" id="active-keys">-</div>
+                            <p class="mb-0">Currently active keys</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-card warning">
+                            <h5><i class="fas fa-clock me-2"></i>Recent Activity</h5>
+                            <div class="stat-number" id="recent-activity">-</div>
+                            <p class="mb-0">Actions in last 24h</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Controls Row -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-cog me-2"></i>Portal Settings</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="auth-toggle">
+                                    <label class="form-check-label" for="auth-toggle">
+                                        Enable Key Generation
+                                    </label>
+                                </div>
+                                <p class="text-muted small mt-2">
+                                    When disabled, users can access materials without generating keys
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Quick Actions</h5>
+                            </div>
+                            <div class="card-body">
+                                <button class="btn btn-outline-primary me-2 mb-2">
+                                    <i class="fas fa-sync me-2"></i>Refresh Stats
+                                </button>
+                                <button class="btn btn-outline-danger mb-2">
+                                    <i class="fas fa-trash me-2"></i>Clear Expired Keys
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Activity Log -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-history me-2"></i>Recent Activity</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="activity-log">
+                            <div class="text-center py-5">
+                                <div class="spinner-border loading-spinner text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <% } %>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const isAdmin = <%= isAdmin %>;
+            
+            if (!isAdmin) {
+                setupLoginForm();
+            } else {
+                setupAdminDashboard();
+            }
+            
+            function setupLoginForm() {
+                const form = document.getElementById('login-form');
+                form.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const password = document.getElementById('password').value;
+                    
+                    try {
+                        const response = await fetch('/admin/login', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ password })
+                        });
+                        
+                        const data = await response.json();
+                        if (data.success) {
+                            window.location.reload();
+                        } else {
+                            alert('Invalid password');
+                        }
+                    } catch (error) {
+                        console.error('Login failed:', error);
+                        alert('Login failed. Please try again.');
+                    }
+                });
+            }
+            
+            function setupAdminDashboard() {
+                const logoutBtn = document.getElementById('logout-btn');
+                const authToggle = document.getElementById('auth-toggle');
+                
+                // Logout handler
+                logoutBtn.addEventListener('click', async () => {
+                    try {
+                        await fetch('/admin/logout', { method: 'POST' });
+                        window.location.reload();
+                    } catch (error) {
+                        console.error('Logout failed:', error);
+                    }
+                });
+                
+                // Auth toggle handler
+                authToggle.addEventListener('change', async () => {
+                    const isEnabled = authToggle.checked;
+                    try {
+                        const response = await fetch('/admin/auth-status', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ isEnabled })
+                        });
+                        
+                        const data = await response.json();
+                        if (!data.success) {
+                            throw new Error(data.message || 'Failed to update status');
+                        }
+                    } catch (error) {
+                        console.error('Failed to update auth status:', error);
+                        authToggle.checked = !isEnabled;
+                        alert('Failed to update authentication status: ' + error.message);
+                    }
+                });
+                
+                // Load initial data
+                loadAdminData();
+                
+                // Refresh data every 30 seconds
+                setInterval(loadAdminData, 30000);
+            }
+            
+            async function loadAdminData() {
+                try {
+                    // Load auth status
+                    const authResponse = await fetch('/admin/auth-status');
+                    const authData = await authResponse.json();
+                    if (authData.success) {
+                        document.getElementById('auth-toggle').checked = authData.isEnabled;
+                    }
+                    
+                    // Load stats
+                    const statsResponse = await fetch('/admin/stats');
+                    const statsData = await statsResponse.json();
+                    if (statsData.success) {
+                        updateDashboardStats(statsData.stats);
+                    }
+                } catch (error) {
+                    console.error('Failed to load admin data:', error);
+                }
+            }
+            
+            function updateDashboardStats(stats) {
+                // Update statistics
+                document.getElementById('total-keys').textContent = stats.totalKeys;
+                document.getElementById('active-keys').textContent = stats.activeKeys;
+                document.getElementById('recent-activity').textContent = stats.recentLogs.length;
+                
+                // Update activity log
+                const activityLog = document.getElementById('activity-log');
+                activityLog.innerHTML = stats.recentLogs.length ? '' : '<p class="text-center text-muted">No recent activity</p>';
+                
+                stats.recentLogs.forEach(log => {
+                    const time = new Date(log.timestamp).toLocaleString();
+                    const div = document.createElement('div');
+                    div.className = 'activity-item';
+                    div.innerHTML = `
+                        <div class="activity-time">${time}</div>
+                        <div class="activity-action">${log.action}</div>
+                        <div class="activity-details text-muted">${log.details}</div>
+                    `;
+                    activityLog.appendChild(div);
+                });
+            }
+        });
+    </script>
+</body>
+</html> 

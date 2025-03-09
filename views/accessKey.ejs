@@ -1,0 +1,131 @@
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h3><i class="fas fa-lock me-2"></i> Enter Access Key</h3>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <p><i class="fas fa-info-circle me-2"></i> Please enter your access key to view educational materials.</p>
+                    <p>Don't have a key? <a href="/generateKey" class="alert-link">Generate one here</a>.</p>
+                </div>
+                
+                <form id="access-key-form">
+                    <div class="mb-4">
+                        <label for="access-key" class="form-label">Access Key</label>
+                        <div class="input-group">
+                            <input type="text" id="access-key" class="form-control form-control-lg" placeholder="Enter your access key here" required>
+                            <button class="btn btn-outline-secondary" type="button" id="paste-key-btn">
+                                <i class="fas fa-paste"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="error-message" class="alert alert-danger d-none">
+                        Invalid or expired access key. Please try again or generate a new key.
+                    </div>
+                    
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-unlock-alt me-2"></i> Access Materials
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Firebase
+    const firebaseConfig = {
+        apiKey: "AIzaSyAVrK3QW1jlREARB7M9e2igW2F6EtVP3Iw",
+        authDomain: "gec-wave.firebaseapp.com",
+        databaseURL: "https://gec-wave-default-rtdb.firebaseio.com",
+        projectId: "gec-wave",
+        storageBucket: "gec-wave.firebasestorage.app",
+        messagingSenderId: "1095163626038",
+        appId: "1:1095163626038:web:5bf07b161005a665e30e97",
+        measurementId: "G-12VHF7SJ6M"
+    };
+    
+    // Check if Firebase is already initialized
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+    
+    const db = firebase.database();
+    
+    // Paste button functionality
+    document.getElementById('paste-key-btn').addEventListener('click', async function() {
+        try {
+            const text = await navigator.clipboard.readText();
+            document.getElementById('access-key').value = text;
+        } catch (err) {
+            console.error('Failed to read clipboard: ', err);
+            alert('Could not access clipboard. Please paste manually.');
+        }
+    });
+    
+    // Form submission
+    document.getElementById('access-key-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const accessKey = document.getElementById('access-key').value.trim();
+        const errorMessage = document.getElementById('error-message');
+        
+        if (!accessKey) {
+            errorMessage.classList.remove('d-none');
+            return;
+        }
+        
+        // Check key validity in Firebase
+        db.ref('accessKeys').orderByChild('key').equalTo(accessKey).once('value')
+            .then(snapshot => {
+                if (snapshot.exists()) {
+                    let validKey = false;
+                    let keyId = null;
+                    
+                    snapshot.forEach(childSnapshot => {
+                        const keyData = childSnapshot.val();
+                        const expiryTime = new Date(keyData.expiresAt).getTime();
+                        const currentTime = new Date().getTime();
+                        
+                        if (expiryTime > currentTime) {
+                            validKey = true;
+                            keyId = childSnapshot.key;
+                        }
+                    });
+                    
+                    if (validKey) {
+                        // Set session cookie to remember valid key
+                        document.cookie = `accessKey=${accessKey}; path=/; max-age=${36*60*60}`;
+                        
+                        // Record usage
+                        if (keyId) {
+                            db.ref(`accessKeys/${keyId}/usages`).push({
+                                timestamp: new Date().toISOString(),
+                                userAgent: navigator.userAgent
+                            });
+                        }
+                        
+                        // Redirect to materials page
+                        window.location.href = '/materials';
+                    } else {
+                        errorMessage.textContent = 'This access key has expired. Please generate a new one.';
+                        errorMessage.classList.remove('d-none');
+                    }
+                } else {
+                    errorMessage.textContent = 'Invalid access key. Please check and try again.';
+                    errorMessage.classList.remove('d-none');
+                }
+            })
+            .catch(error => {
+                console.error('Error checking access key:', error);
+                errorMessage.textContent = 'An error occurred while checking your key. Please try again.';
+                errorMessage.classList.remove('d-none');
+            });
+    });
+});
+</script> 

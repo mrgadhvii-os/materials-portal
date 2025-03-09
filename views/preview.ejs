@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <style>
+        .preview-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .preview-header {
+            background: linear-gradient(135deg, #2196F3, #3F51B5);
+            color: white;
+            padding: 2rem;
+            border-radius: 20px;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .preview-header.paper-mode {
+            background: linear-gradient(135deg, #dc3545, #ff4444);
+        }
+        .preview-badge {
+            padding: 8px 16px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-right: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        .preview-badge:hover {
+            transform: translateY(-2px);
+        }
+        .preview-frame {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        .preview-frame iframe {
+            width: 100%;
+            height: 600px;
+            border: none;
+        }
+        .details-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        .details-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .details-list li {
+            padding: 1rem;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            align-items: center;
+        }
+        .details-list li:last-child {
+            border-bottom: none;
+        }
+        .details-list i {
+            width: 30px;
+            color: #2196F3;
+        }
+        .countdown-container {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        #countdown {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #2196F3;
+            margin: 1rem 0;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .progress {
+            height: 10px;
+            border-radius: 5px;
+            background-color: #e9ecef;
+            margin: 1rem 0;
+        }
+        .btn-download {
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .btn-download:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        .btn-preview {
+            background: #6c757d;
+            color: white;
+            margin-right: 1rem;
+        }
+        .btn-preview:hover {
+            background: #5a6268;
+            color: white;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="preview-container">
+        <!-- Preview Header -->
+        <div class="preview-header <%= material.materialType && material.materialType.toLowerCase().includes('paper') ? 'paper-mode' : '' %>">
+            <h1 class="mb-3"><%= material.subject || 'Material' %> <%= material.materialType || '' %></h1>
+            <div>
+                <% if (material.standard) { %>
+                    <span class="preview-badge bg-primary"><i class="fas fa-graduation-cap me-2"></i><%= material.standard %></span>
+                <% } %>
+                <% if (material.year) { %>
+                    <span class="preview-badge bg-success"><i class="fas fa-calendar me-2"></i><%= material.year %></span>
+                <% } %>
+                <% if (material.language) { %>
+                    <span class="preview-badge bg-info"><i class="fas fa-language me-2"></i><%= material.language %></span>
+                <% } %>
+                <% if (material.materialType) { %>
+                    <span class="preview-badge <%= material.materialType.toLowerCase().includes('paper') ? 'bg-danger' : 'bg-warning' %>">
+                        <i class="fas <%= material.materialType.toLowerCase().includes('paper') ? 'fa-file-pdf' : 'fa-book' %> me-2"></i>
+                        <%= material.materialType %>
+                    </span>
+                <% } %>
+            </div>
+        </div>
+
+        <!-- Preview Frame -->
+        <div class="preview-frame">
+            <% if (material.thumbnailUrl) { %>
+                <iframe src="<%= material.thumbnailUrl %>" allowfullscreen></iframe>
+            <% } else { %>
+                <div class="text-center py-5">
+                    <i class="fas fa-file-pdf fa-8x text-danger mb-3"></i>
+                    <h3>Preview not available</h3>
+                    <p class="text-muted">Download the file to view its contents</p>
+                </div>
+            <% } %>
+        </div>
+
+        <!-- Material Details -->
+        <div class="details-card">
+            <h3 class="mb-4"><i class="fas fa-info-circle me-2"></i>Material Details</h3>
+            <ul class="details-list">
+                <li><i class="fas fa-graduation-cap"></i><strong class="me-2">Standard:</strong> <%= material.standard %></li>
+                <li><i class="fas fa-book"></i><strong class="me-2">Subject:</strong> <%= material.subject %></li>
+                <li><i class="fas fa-file-alt"></i><strong class="me-2">Type:</strong> <%= material.materialType %></li>
+                <li><i class="fas fa-calendar"></i><strong class="me-2">Year:</strong> <%= material.year %></li>
+                <li><i class="fas fa-language"></i><strong class="me-2">Language:</strong> <%= material.language %></li>
+                <li><i class="fas fa-file"></i><strong class="me-2">Filename:</strong> <%= material.filename %></li>
+            </ul>
+        </div>
+
+        <!-- Download Section -->
+        <div class="countdown-container">
+            <h3><i class="fas fa-clock me-2"></i>Download Timer</h3>
+            <p class="text-muted">Your download will be available in:</p>
+            <div id="countdown">10</div>
+            <div class="progress">
+                <div id="countdown-progress" class="progress-bar bg-info" role="progressbar" style="width: 0%"></div>
+            </div>
+            <div class="mt-4">
+                <a id="preview-btn" href="https://drive.google.com/file/d/<%= material.url.match(/id=([^&]+)/)[1] %>/preview" 
+                   class="btn btn-preview" target="_blank">
+                    <i class="fas fa-eye me-2"></i>Preview in New Tab
+                </a>
+                <a id="download-btn" href="<%= material.url %>" class="btn btn-primary btn-download disabled">
+                    <i class="fas fa-download me-2"></i>Download Material
+                </a>
+            </div>
+            <p class="text-muted mt-3"><small>Please wait for the countdown to complete</small></p>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            let timeLeft = 10;
+            const countdownEl = $('#countdown');
+            const progressEl = $('#countdown-progress');
+            const downloadBtn = $('#download-btn');
+            
+            const timer = setInterval(function() {
+                timeLeft--;
+                countdownEl.text(timeLeft);
+                progressEl.css('width', ((10 - timeLeft) / 10 * 100) + '%');
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    downloadBtn.removeClass('disabled')
+                        .addClass('animate__animated animate__pulse');
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html> 

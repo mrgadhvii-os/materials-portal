@@ -1,0 +1,50 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "accessControl": {
+      "settings": {
+        "authEnabled": {
+          ".read": true,
+          ".write": "root.child('adminUsers').child(auth.uid).exists()"
+        }
+      }
+    },
+    "accessKeys": {
+      ".read": "root.child('adminUsers').child(auth.uid).exists()",
+      ".write": false,
+      "$key": {
+        ".read": "data.child('key').val() === auth.uid || root.child('adminUsers').child(auth.uid).exists()",
+        ".write": "!data.exists() || data.child('key').val() === auth.uid || root.child('adminUsers').child(auth.uid).exists()",
+        ".validate": "newData.hasChildren(['key', 'expiresAt', 'isActivated'])"
+      }
+    },
+    "adminLogs": {
+      ".read": "root.child('adminUsers').child(auth.uid).exists()",
+      ".write": "root.child('adminUsers').child(auth.uid).exists()",
+      ".indexOn": ["timestamp"],
+      "$logId": {
+        ".validate": "newData.hasChildren(['timestamp', 'action', 'details'])",
+        "timestamp": {
+          ".validate": "newData.isNumber() && newData.val() <= now"
+        },
+        "action": {
+          ".validate": "newData.isString() && newData.val().length <= 100"
+        },
+        "details": {
+          ".validate": "newData.isString() && newData.val().length <= 500"
+        },
+        "adminIp": {
+          ".validate": "newData.isString() && newData.val().length <= 45"
+        }
+      }
+    },
+    "adminUsers": {
+      ".read": "root.child('adminUsers').child(auth.uid).exists()",
+      ".write": "root.child('adminUsers').child(auth.uid).exists()",
+      "$uid": {
+        ".validate": "newData.isBoolean()"
+      }
+    }
+  }
+} 

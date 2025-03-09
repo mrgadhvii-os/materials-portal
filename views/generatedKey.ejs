@@ -1,0 +1,228 @@
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h3><i class="fas fa-key me-2"></i> Your Access Key is Ready!</h3>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-success">
+                    <p><i class="fas fa-check-circle me-2"></i> <strong>Congratulations!</strong> Your access key has been generated and is valid for 36 hours.</p>
+                </div>
+                
+                <div id="loading-container" class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-3">Activating your access key...</p>
+                </div>
+                
+                <div id="key-container" class="d-none">
+                    <div class="key-box p-4 bg-light border rounded mb-4 text-center">
+                        <h4 class="mb-3">Your Access Key</h4>
+                        <div class="input-group mb-3">
+                            <input type="text" id="access-key" class="form-control form-control-lg" readonly>
+                            <button class="btn btn-success" type="button" id="copy-key-btn">
+                                <i class="fas fa-copy me-1"></i> Copy
+                            </button>
+                        </div>
+                        <div class="expiry-info">
+                            <p><i class="fas fa-clock me-1"></i> Valid until: <span id="expiry-time"></span></p>
+                            <div class="progress mb-2">
+                                <div id="time-progress" class="progress-bar bg-info" role="progressbar" style="width: 100%"></div>
+                            </div>
+                            <p><span id="hours-left"></span> hours remaining</p>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <p><i class="fas fa-exclamation-triangle me-2"></i> <strong>Important:</strong> Copy this key now! You'll need it to access the educational materials.</p>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <a href="/" class="btn btn-primary btn-lg">
+                            <i class="fas fa-sign-in-alt me-1"></i> Go to Login Page
+                        </a>
+                    </div>
+                </div>
+                
+                <div id="error-container" class="d-none">
+                    <div class="alert alert-danger">
+                        <p><i class="fas fa-exclamation-circle me-2"></i> <strong>Error:</strong> <span id="error-message"></span></p>
+                    </div>
+                    <div class="text-center mt-4">
+                        <a href="/generateKey" class="btn btn-primary">
+                            <i class="fas fa-redo me-1"></i> Try Again
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Firebase
+    const firebaseConfig = {
+        apiKey: "AIzaSyAVrK3QW1jlREARB7M9e2igW2F6EtVP3Iw",
+        authDomain: "gec-wave.firebaseapp.com",
+        databaseURL: "https://gec-wave-default-rtdb.firebaseio.com",
+        projectId: "gec-wave",
+        storageBucket: "gec-wave.firebasestorage.app",
+        messagingSenderId: "1095163626038",
+        appId: "1:1095163626038:web:5bf07b161005a665e30e97",
+        measurementId: "G-12VHF7SJ6M"
+    };
+    
+    // Check if Firebase is already initialized
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+    
+    const db = firebase.database();
+    
+    // Get key from URL path
+    const pathSegments = window.location.pathname.split('/');
+    const keyValue = pathSegments[pathSegments.length - 1];
+    
+    // Elements
+    const loadingContainer = document.getElementById('loading-container');
+    const keyContainer = document.getElementById('key-container');
+    const errorContainer = document.getElementById('error-container');
+    const errorMessage = document.getElementById('error-message');
+    const accessKeyInput = document.getElementById('access-key');
+    const expiryTimeSpan = document.getElementById('expiry-time');
+    const hoursLeftSpan = document.getElementById('hours-left');
+    const timeProgress = document.getElementById('time-progress');
+    
+    // Copy key button
+    document.getElementById('copy-key-btn').addEventListener('click', function() {
+        accessKeyInput.select();
+        document.execCommand('copy');
+        alert('Access key copied to clipboard!');
+    });
+    
+    // Find and activate the key
+    function findAndActivateKey(keyValue) {
+        // First try using it as a key directly
+        db.ref('accessKeys').orderByChild('key').equalTo(keyValue).once('value')
+            .then(snapshot => {
+                if (snapshot.exists()) {
+                    // Process as an actual key
+                    processKeySnapshot(snapshot);
+                    return;
+                }
+                
+                // If not found as a key, try as a shortCode
+                db.ref('accessKeys').orderByChild('shortCode').equalTo(keyValue).once('value')
+                    .then(shortCodeSnapshot => {
+                        if (shortCodeSnapshot.exists()) {
+                            // Process as a shortCode
+                            processKeySnapshot(shortCodeSnapshot);
+                            return;
+                        }
+                        
+                        // Not found either way
+                        handleKeyNotFound();
+                    })
+                    .catch(error => handleKeyError(error));
+            })
+            .catch(error => handleKeyError(error));
+    }
+    
+    // Process the key snapshot data
+    function processKeySnapshot(snapshot) {
+        // Hide loading
+        loadingContainer.classList.add('d-none');
+        
+        let keyData = null;
+        let keyId = null;
+        
+        snapshot.forEach(childSnapshot => {
+            keyData = childSnapshot.val();
+            keyId = childSnapshot.key;
+        });
+        
+        if (!keyData) {
+            handleKeyNotFound();
+            return;
+        }
+        
+        // Check if already activated
+        if (keyData.isActivated) {
+            // Already activated, just show the key
+            displayKeyInfo(keyData);
+            return;
+        }
+        
+        // Activate the key
+        db.ref(`accessKeys/${keyId}`).update({ 
+            isActivated: true,
+            activatedAt: new Date().toISOString()
+        })
+        .then(() => {
+            // Show the key info
+            keyData.isActivated = true;
+            keyData.activatedAt = new Date().toISOString();
+            displayKeyInfo(keyData);
+        })
+        .catch(error => {
+            console.error('Error activating key:', error);
+            handleKeyError(error, 'Failed to activate the access key.');
+        });
+    }
+    
+    // Error handlers
+    function handleKeyNotFound() {
+        loadingContainer.classList.add('d-none');
+        errorMessage.textContent = 'The access key could not be found.';
+        errorContainer.classList.remove('d-none');
+    }
+    
+    function handleKeyError(error, message = 'An error occurred while retrieving the access key.') {
+        console.error('Error fetching key:', error);
+        loadingContainer.classList.add('d-none');
+        errorMessage.textContent = message;
+        errorContainer.classList.remove('d-none');
+    }
+    
+    // Call the findAndActivateKey function with the key from the URL
+    findAndActivateKey(keyValue);
+    
+    // Display key information
+    function displayKeyInfo(keyData) {
+        // Set the key value
+        accessKeyInput.value = keyData.key;
+        
+        // Calculate time remaining
+        const expiryTime = new Date(keyData.expiresAt);
+        const currentTime = new Date();
+        const timeRemaining = expiryTime - currentTime;
+        const hoursRemaining = Math.max(0, Math.floor(timeRemaining / (1000 * 60 * 60)));
+        const totalDuration = 36 * 60 * 60 * 1000; // 36 hours in ms
+        const percentRemaining = Math.min(100, Math.max(0, (timeRemaining / totalDuration) * 100));
+        
+        // Format expiry time
+        const options = { 
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric', 
+            hour: '2-digit', 
+            minute: '2-digit'
+        };
+        expiryTimeSpan.textContent = expiryTime.toLocaleDateString(undefined, options);
+        
+        // Set hours remaining
+        hoursLeftSpan.textContent = hoursRemaining;
+        
+        // Set progress bar
+        timeProgress.style.width = percentRemaining + '%';
+        
+        // Show key container
+        keyContainer.classList.remove('d-none');
+        
+        // Set the key in a cookie for immediate use
+        document.cookie = `accessKey=${keyData.key}; path=/; max-age=${36*60*60}`;
+    }
+});
+</script> 

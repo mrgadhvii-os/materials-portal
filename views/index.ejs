@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <style>
+        .form-switch .form-check-input {
+            width: 3em;
+            height: 1.5em;
+            margin-left: -3.5em;
+            cursor: pointer;
+        }
+        .form-switch .form-check-input:checked {
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+        .filter-container {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            padding: 30px;
+            border-radius: 25px;
+            margin-bottom: 40px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        .material-card {
+            transition: all 0.3s ease;
+            margin-bottom: 25px;
+            break-inside: avoid;
+        }
+        .material-card:hover {
+            transform: translateY(-5px) scale(1.02);
+        }
+        .material-card .card {
+            border: none;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            background: white;
+        }
+        .material-card .card-header {
+            background: linear-gradient(45deg, #2196F3, #3F51B5);
+            color: white;
+            border: none;
+            padding: 20px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        .material-card.paper-mode .card-header {
+            background: linear-gradient(45deg, #dc3545, #ff4444);
+        }
+        .material-card .card-img-top {
+            padding: 30px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        }
+        .material-card .card-body {
+            padding: 20px;
+        }
+        .material-badge {
+            margin-right: 8px;
+            margin-bottom: 8px;
+            padding: 8px 16px;
+            border-radius: 25px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        .material-badge:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+        }
+        .material-card .card-footer {
+            background: transparent;
+            border-top: 1px solid rgba(0,0,0,0.1);
+            padding: 15px 20px;
+        }
+        .material-card .btn {
+            border-radius: 25px;
+            padding: 10px 20px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+        }
+        .material-card .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        #countdown-circle {
+            position: relative;
+            width: 100px;
+            height: 100px;
+        }
+        #countdown-circle svg {
+            transform: rotate(-90deg);
+        }
+        #countdown-circle circle {
+            transition: stroke-dashoffset 1s linear;
+        }
+        .form-floating {
+            margin-bottom: 0;
+            position: relative;
+        }
+        .form-floating .form-select {
+            height: 65px;
+            border-radius: 16px;
+            border: 2px solid rgba(63, 81, 181, 0.1);
+            padding: 1.25rem 1rem 0.5rem;
+            background-color: rgba(255, 255, 255, 0.9);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 500;
+            font-size: 1rem;
+            color: #2c3e50;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%233F51B5'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 24px;
+        }
+        .form-floating .form-select:hover {
+            border-color: rgba(63, 81, 181, 0.5);
+            box-shadow: 0 4px 12px rgba(63, 81, 181, 0.08);
+            transform: translateY(-1px);
+        }
+        .form-floating .form-select:focus {
+            border-color: #3F51B5;
+            box-shadow: 0 6px 16px rgba(63, 81, 181, 0.12);
+            transform: translateY(-2px);
+            outline: none;
+        }
+        .form-floating label {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 1.25rem 1rem;
+            overflow: hidden;
+            text-align: start;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            pointer-events: none;
+            border: 1px solid transparent;
+            transform-origin: 0 0;
+            transition: opacity .15s ease-in-out, transform .15s ease-in-out;
+            color: #6c757d;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1rem;
+        }
+        .form-floating label i {
+            font-size: 1.1rem;
+            color: #3F51B5;
+            opacity: 0.8;
+            transition: all 0.3s ease;
+        }
+        .form-floating .form-select:focus ~ label,
+        .form-floating .form-select:not(:placeholder-shown) ~ label {
+            opacity: 0.8;
+            transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
+            color: #3F51B5;
+        }
+        .form-floating .form-select:focus ~ label i,
+        .form-floating .form-select:not(:placeholder-shown) ~ label i {
+            opacity: 1;
+            transform: scale(0.85);
+        }
+        .filter-header {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(63, 81, 181, 0.1);
+            text-align: center;
+        }
+        .filter-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #3F51B5;
+            margin: 0;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+        .filter-subtitle {
+            font-size: 1rem;
+            color: #6c757d;
+            margin: 8px 0 0 0;
+            font-weight: 400;
+        }
+        .filter-group {
+            background: rgba(255, 255, 255, 0.5);
+            padding: 8px;
+            border-radius: 20px;
+            margin-bottom: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(63, 81, 181, 0.05);
+        }
+        .filter-group:hover {
+            background: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 8px 20px rgba(63, 81, 181, 0.08);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <!-- Papers Toggle Switch -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="mb-0"><i class="fas fa-graduation-cap me-2"></i>Educational Portal</h1>
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="papersToggle" <%= isAuthEnabled ? 'checked' : '' %>>
+                <label class="form-check-label" for="papersToggle">
+                    <i class="fas fa-file-alt me-1"></i> Question Papers Mode
+                </label>
+            </div>
+        </div>
+
+        <!-- Access Key Validity Timer -->
+        <% if (accessKey && accessKey !== 'direct_access') { %>
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h4 class="mb-0"><i class="fas fa-clock me-2"></i>Access Key Validity</h4>
+            </div>
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-3 text-center">
+                        <div id="countdown-circle">
+                            <svg width="100" height="100" viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r="45" fill="none" stroke="#e9ecef" stroke-width="8"/>
+                                <circle id="countdown-circle-progress" cx="50" cy="50" r="45" fill="none" stroke="#3f51b5" stroke-width="8" stroke-dasharray="283" stroke-dashoffset="0"/>
+                            </svg>
+                            <div class="position-absolute top-50 start-50 translate-middle">
+                                <h3 id="hours-remaining" class="mb-0">--</h3>
+                                <small>hours left</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-9">
+                        <h5 class="mb-3">Your access expires in: <span id="time-remaining">--:--:--</span></h5>
+                        <div class="progress mb-3" style="height: 20px;">
+                            <div id="time-progress" class="progress-bar bg-info" role="progressbar" style="width: 100%"></div>
+                        </div>
+                        <p class="mb-0">Valid until: <span id="expiry-time">--/--/-- --:--</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <% } %>
+
+        <!-- Filter Section -->
+        <div class="filter-container">
+            <div class="filter-header">
+                <h3 class="filter-title">
+                    <i class="fas fa-filter fa-lg"></i>
+                    Browse Materials
+                </h3>
+                <p class="filter-subtitle">Find exactly what you need with our smart filters</p>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-3">
+                    <div class="filter-group">
+                        <div class="form-floating">
+                            <select id="standard-filter" class="form-select" placeholder=" ">
+                                <option value="">All Standards</option>
+                            </select>
+                            <label for="standard-filter">
+                                <i class="fas fa-graduation-cap"></i>
+                                Standard
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="filter-group">
+                        <div class="form-floating">
+                            <select id="subject-filter" class="form-select" placeholder=" ">
+                                <option value="">All Subjects</option>
+                            </select>
+                            <label for="subject-filter">
+                                <i class="fas fa-book"></i>
+                                Subject
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="filter-group">
+                        <div class="form-floating">
+                            <select id="year-filter" class="form-select" placeholder=" ">
+                                <option value="">All Years</option>
+                            </select>
+                            <label for="year-filter">
+                                <i class="fas fa-calendar"></i>
+                                Year
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="filter-group">
+                        <div class="form-floating">
+                            <select id="language-filter" class="form-select" placeholder=" ">
+                                <option value="">All Languages</option>
+                            </select>
+                            <label for="language-filter">
+                                <i class="fas fa-language"></i>
+                                Language
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Materials/Papers Cards Container -->
+        <div class="row" id="materials-container">
+            <% const items = materials %>
+            <% items.forEach(item => { %>
+                <div class="col-md-4 material-card mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span><%= item.subject %></span>
+                            <span class="badge bg-secondary"><%= item.standard %></span>
+                        </div>
+                        <div class="card-img-top d-flex align-items-center justify-content-center" style="height: 180px; background-color: #f8f9fa;">
+                            <i class="fas <%= isAuthEnabled ? 'fa-file-pdf text-danger' : 'fa-book text-primary' %> fa-5x"></i>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title"><%= item.subject %> <%= item.materialType %></h5>
+                            <div class="my-2">
+                                <span class="badge bg-primary material-badge"><%= item.standard %></span>
+                                <span class="badge bg-success material-badge"><%= item.year %></span>
+                                <span class="badge bg-info material-badge"><%= item.language %></span>
+                                <span class="badge <%= isAuthEnabled ? 'bg-danger' : 'bg-warning' %> material-badge">
+                                    <%= isAuthEnabled ? 'Question Paper' : item.materialType %>
+                                </span>
+                            </div>
+                            <p class="card-text">
+                                <%= item.subject %> <%= isAuthEnabled ? 'Question Paper' : item.materialType %> 
+                                for <%= item.standard %> (<%= item.year %>)
+                            </p>
+                        </div>
+                        <div class="card-footer">
+                            <a href="/preview/<%= item.id %>" class="btn <%= isAuthEnabled ? 'btn-danger' : 'btn-primary' %> w-100">
+                                <i class="fas <%= isAuthEnabled ? 'fa-file-pdf' : 'fa-eye' %> me-1"></i>
+                                <%= isAuthEnabled ? 'View Paper' : 'View Material' %>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            <% }); %>
+        </div>
+
+        <!-- No Results Message -->
+        <div id="no-results" class="text-center p-5 d-none">
+            <i class="fas fa-search fa-3x mb-3 text-muted"></i>
+            <h4>No <%= isAuthEnabled ? 'papers' : 'materials' %> found matching your filters</h4>
+            <p>Try adjusting your filter criteria</p>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Add Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof jQuery !== 'undefined') {
+                // Initialize Firebase
+                const firebaseConfig = {
+                    apiKey: "AIzaSyAVrK3QW1jlREARB7M9e2igW2F6EtVP3Iw",
+                    authDomain: "gec-wave.firebaseapp.com",
+                    databaseURL: "https://gec-wave-default-rtdb.firebaseio.com",
+                    projectId: "gec-wave",
+                    storageBucket: "gec-wave.firebasestorage.app",
+                    messagingSenderId: "1095163626038",
+                    appId: "1:1095163626038:web:5bf07b161005a665e30e97",
+                    measurementId: "G-12VHF7SJ6M"
+                };
+                
+                // Initialize Firebase
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
+                }
+                
+                const db = firebase.database();
+                
+                // Materials data
+                const materialsData = JSON.parse('<%- JSON.stringify(materials) %>');
+                const papersData = JSON.parse('<%- JSON.stringify(papers) %>');
+                let currentItems = materialsData;  // Default to materials
+                
+                // Papers Toggle Handler
+                const papersToggle = $('#papersToggle');
+                
+                // Set initial state from server
+                const currentMode = false;  // Default to false (materials mode)
+                papersToggle.prop('checked', currentMode);
+
+                // Handle toggle changes
+                papersToggle.on('change', function(e) {
+                    e.preventDefault(); // Prevent default behavior
+                    
+                    const isChecked = $(this).prop('checked');
+                    
+                    // Show loading state
+                    const label = $(this).next('label');
+                    const originalText = label.html();
+                    label.html('<i class="fas fa-spinner fa-spin me-1"></i> Switching mode...');
+                    
+                    // Update items based on toggle state
+                    currentItems = isChecked ? papersData : materialsData;
+                    
+                    // Update UI immediately
+                    updateMaterialsDisplay(currentItems);
+                    
+                    // Make AJAX call to update auth status
+                    $.post('/admin/auth-status', { isEnabled: isChecked })
+                        .done(function(response) {
+                            if (!response.success) {
+                                // Revert on error
+                                currentItems = !isChecked ? papersData : materialsData;
+                                updateMaterialsDisplay(currentItems);
+                                papersToggle.prop('checked', !isChecked);
+                                alert('Failed to switch mode. Please try again.');
+                            }
+                            label.html(originalText);
+                        })
+                        .fail(function() {
+                            // Revert on error
+                            currentItems = !isChecked ? papersData : materialsData;
+                            updateMaterialsDisplay(currentItems);
+                            papersToggle.prop('checked', !isChecked);
+                            label.html(originalText);
+                            alert('Failed to switch mode. Please try again.');
+                        });
+                });
+
+                // Function to update materials display
+                function updateMaterialsDisplay(items) {
+                    const container = $('#materials-container');
+                    container.empty();
+                    
+                    items.forEach(item => {
+                        const isPaperMode = papersToggle.prop('checked');
+                        const card = `
+                            <div class="col-md-4 material-card mb-4 ${isPaperMode ? 'paper-mode' : ''}">
+                                <div class="card h-100 shadow-sm">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <span>${item.subject}</span>
+                                        <span class="badge bg-secondary">${item.standard}</span>
+                                    </div>
+                                    <div class="card-img-top d-flex align-items-center justify-content-center" style="height: 180px; background-color: #f8f9fa;">
+                                        <i class="fas ${isPaperMode ? 'fa-file-pdf text-danger' : 'fa-book text-primary'} fa-5x"></i>
+                                    </div>
+                                    <div class="card-body">
+                                        <h5 class="card-title">${item.subject} ${item.materialType}</h5>
+                                        <div class="my-2">
+                                            <span class="badge bg-primary material-badge">${item.standard}</span>
+                                            <span class="badge bg-success material-badge">${item.year}</span>
+                                            <span class="badge bg-info material-badge">${item.language}</span>
+                                            <span class="badge ${isPaperMode ? 'bg-danger' : 'bg-warning'} material-badge">
+                                                ${isPaperMode ? 'Question Paper' : item.materialType}
+                                            </span>
+                                        </div>
+                                        <p class="card-text">
+                                            ${item.subject} ${isPaperMode ? 'Question Paper' : item.materialType} 
+                                            for ${item.standard} (${item.year})
+                                        </p>
+                                    </div>
+                                    <div class="card-footer">
+                                        <a href="/preview/${item.id}" class="btn ${isPaperMode ? 'btn-danger' : 'btn-primary'} w-100">
+                                            <i class="fas ${isPaperMode ? 'fa-file-pdf' : 'fa-eye'} me-1"></i>
+                                            ${isPaperMode ? 'View Paper' : 'View Material'}
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        container.append(card);
+                    });
+                    
+                    // Update filters
+                    updateFilters(items);
+                }
+
+                // Function to update filters
+                function updateFilters(items) {
+                    const standards = [...new Set(items.map(item => item.standard))].filter(s => s !== 'Unknown').sort();
+                    const subjects = [...new Set(items.map(item => item.subject))].filter(s => s !== 'Unknown').sort();
+                    const years = [...new Set(items.map(item => item.year))].filter(y => y !== 'Unknown').sort().reverse();
+                    const languages = [...new Set(items.map(item => item.language))].filter(l => l !== 'Unknown').sort();
+                    
+                    // Clear existing options
+                    $('#standard-filter').find('option:not(:first)').remove();
+                    $('#subject-filter').find('option:not(:first)').remove();
+                    $('#year-filter').find('option:not(:first)').remove();
+                    $('#language-filter').find('option:not(:first)').remove();
+                    
+                    // Add new options
+                    standards.forEach(standard => {
+                        $('#standard-filter').append(`<option value="${standard}">${standard}</option>`);
+                    });
+                    
+                    subjects.forEach(subject => {
+                        $('#subject-filter').append(`<option value="${subject}">${subject}</option>`);
+                    });
+                    
+                    years.forEach(year => {
+                        $('#year-filter').append(`<option value="${year}">${year}</option>`);
+                    });
+                    
+                    languages.forEach(language => {
+                        $('#language-filter').append(`<option value="${language}">${language}</option>`);
+                    });
+                }
+
+                // Initial filters setup
+                updateFilters(currentItems);
+
+                // Update key timer
+                function updateKeyTimer(keyData) {
+                    if (!keyData || !keyData.expiresAt) return;
+                    
+                    const hoursRemainingEl = document.getElementById('hours-remaining');
+                    const timeRemainingEl = document.getElementById('time-remaining');
+                    const expiryTimeEl = document.getElementById('expiry-time');
+                    const timeProgressEl = document.getElementById('time-progress');
+                    const countdownCircleProgressEl = document.getElementById('countdown-circle-progress');
+                    
+                    const expiryTime = new Date(keyData.expiresAt);
+                    const totalDuration = 36 * 60 * 60 * 1000; // 36 hours in ms
+                    
+                    const options = { 
+                        year: 'numeric', 
+                        month: 'short', 
+                        day: 'numeric', 
+                        hour: '2-digit', 
+                        minute: '2-digit'
+                    };
+                    expiryTimeEl.textContent = expiryTime.toLocaleDateString(undefined, options);
+                    
+                    function updateCountdown() {
+                        const currentTime = new Date();
+                        const timeRemaining = expiryTime - currentTime;
+                        
+                        if (timeRemaining <= 0) {
+                            hoursRemainingEl.textContent = '0';
+                            timeRemainingEl.textContent = '00:00:00';
+                            timeProgressEl.style.width = '0%';
+                            countdownCircleProgressEl.style.strokeDashoffset = '283';
+                            
+                            alert('Your access key has expired. Please generate a new one.');
+                            window.location.href = '/logout';
+                            return;
+                        }
+                        
+                        const hoursLeft = Math.floor(timeRemaining / (1000 * 60 * 60));
+                        const minutesLeft = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+                        const secondsLeft = Math.floor((timeRemaining % (1000 * 60)) / 1000);
+                        
+                        const timeString = `${hoursLeft.toString().padStart(2, '0')}:${minutesLeft.toString().padStart(2, '0')}:${secondsLeft.toString().padStart(2, '0')}`;
+                        
+                        const percentRemaining = (timeRemaining / totalDuration) * 100;
+                        const circlePercentage = (timeRemaining / totalDuration);
+                        const circleDashoffset = 283 * (1 - circlePercentage);
+                        
+                        hoursRemainingEl.textContent = hoursLeft;
+                        timeRemainingEl.textContent = timeString;
+                        timeProgressEl.style.width = percentRemaining + '%';
+                        countdownCircleProgressEl.style.strokeDashoffset = circleDashoffset;
+                    }
+                    
+                    updateCountdown();
+                    setInterval(updateCountdown, 1000);
+                }
+                
+                // Get accessKey from cookie
+                function getCookie(name) {
+                    const value = `; ${document.cookie}`;
+                    const parts = value.split(`; ${name}=`);
+                    if (parts.length === 2) return parts.pop().split(';').shift();
+                }
+                
+                const accessKey = getCookie('accessKey');
+                
+                if (accessKey && accessKey !== 'direct_access') {
+                    // Find key data in Firebase
+                    db.ref('accessKeys').orderByChild('key').equalTo(accessKey).once('value')
+                        .then(snapshot => {
+                            if (snapshot.exists()) {
+                                snapshot.forEach(childSnapshot => {
+                                    const keyData = childSnapshot.val();
+                                    updateKeyTimer(keyData);
+                                });
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error fetching access key data:', error);
+                        });
+                }
+            } else {
+                console.error("jQuery is not loaded!");
+            }
+        });
+    </script>
+</body>
+</html> 
